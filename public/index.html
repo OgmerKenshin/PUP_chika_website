@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUP Chika - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Page Container -->
+    <div id="login-container" class="form-card">
+        <h1>PUP Chika</h1>
+        <div class="input-group">
+            <input type="text" id="login-name" placeholder="Name" required>
+            <input type="text" id="login-student-no" placeholder="Student Number" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button onclick="handleLogin()">Login</button>
+        </div>
+        <hr>
+        <button class="reg-btn" onclick="toggleModal(true)">Register</button>
+    </div>
+
+    <!-- Blank Success Page (Hidden by default) -->
+    <div id="main-content" style="display: none;">
+        <h1>Welcome to the Dashboard</h1>
+        <p>This is your blank canvas for the next phase.</p>
+        <button onclick="location.reload()">Logout</button>
+    </div>
+
+    <!-- Registration Pop-up (Modal) -->
+    <div id="reg-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal(false)">&times;</span>
+            <h2>Create Account</h2>
+            <div class="input-group">
+                <input type="text" id="reg-name" placeholder="Full Name">
+                <input type="text" id="reg-student-no" placeholder="Student Number">
+                <input type="password" id="reg-password" placeholder="Password">
+                <button onclick="handleRegister()">Submit Registration</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
