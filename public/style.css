@@ -1,66 +1,176 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+/* --- Global Styles --- */
+* {
+    box-sizing: border-box;
     margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
 }
 
+body {
+    background-color: #f4f6f8;
+    color: #333;
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #800000; /* PUP Maroon Accent */
+    color: white;
+    padding: 1rem 2rem;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Section Layouts --- */
+.view-section {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+.welcome-container {
+    text-align: center;
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-container h1 {
+    margin-bottom: 1rem;
+}
+
+.welcome-container p {
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+/* Placeholder for your Figma visuals/hero image */
+.hero-placeholder {
+    width: 100%;
+    height: 180px;
+    background-color: #e2e8f0;
+    border: 2px dashed #cbd5e1;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+}
+
+/* --- Form & Cards --- */
 .form-card {
     background: white;
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    width: 300px;
-    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .input-group input {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box; /* Prevents input from overflowing */
+    font-size: 1rem;
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #800000; /* PUP Red */
+hr {
+    margin: 1.5rem 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+
+.register-prompt {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* --- Buttons --- */
+.primary-btn {
+    background-color: #800000;
     color: white;
     border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.primary-btn:hover {
+    background-color: #600000;
+}
+
+.secondary-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    margin-top: 10px;
 }
 
-.reg-btn {
-    background-color: #555;
-}
-
-/* Modal Styling */
-.modal {
-    display: none; 
-    position: fixed;
-    z-index: 1;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
-    width: 280px;
-    border-radius: 8px;
-}
-
-.close {
-    float: right;
+.text-btn {
+    background: none;
+    border: none;
+    color: #800000;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 20px;
+    text-decoration: underline;
+}
+
+/* --- Modal Popup --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn {
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Simple helper to hide navigation bar when logged in */
+.hidden {
+    display: none !important;
 }

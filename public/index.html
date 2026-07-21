@@ -3,40 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUP Chika - Login</title>
+    <title>PUP Chika</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Login Page Container -->
-    <div id="login-container" class="form-card">
-        <h1>PUP Chika</h1>
-        <div class="input-group">
-            <input type="text" id="login-name" placeholder="Name" required>
-            <input type="text" id="login-student-no" placeholder="Student Number" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <button onclick="handleLogin()">Login</button>
-        </div>
-        <hr>
-        <button class="reg-btn" onclick="toggleModal(true)">Register</button>
-    </div>
 
-    <!-- Blank Success Page (Hidden by default) -->
-    <div id="main-content" style="display: none;">
-        <h1>Welcome to the Dashboard</h1>
-        <p>This is your blank canvas for the next phase.</p>
-        <button onclick="location.reload()">Logout</button>
-    </div>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <!-- Icon placeholder for later -->
+            <span class="icon-placeholder"></span>
+            <h2>PUP Chika</h2>
+        </div>
+        <div class="nav-links">
+            <!-- These buttons will trigger JS functions to switch views -->
+            <button class="nav-btn" onclick="showSection('home-section')">Home</button>
+            <button class="nav-btn" onclick="showSection('login-section')">Login / Register</button>
+        </div>
+    </nav>
+
+    <!-- Home / Welcome Screen -->
+    <section id="home-section" class="view-section">
+        <div class="welcome-container">
+            <h1>Welcome to PUP Chika!</h1>
+            <p>Your campus digital tambayan. Connect, share, and stay updated with your fellow scholars.</p>
+            <!-- Illustration/Hero image placeholder for Figma phase -->
+            <div class="hero-placeholder"></div>
+            <button class="primary-btn" onclick="showSection('login-section')">Get Started</button>
+        </div>
+    </section>
+
+    <!-- Login Page Container -->
+    <section id="login-section" class="view-section" style="display: none;">
+        <div class="form-card">
+            <h2>Sign In</h2>
+            <p>Welcome back! Please enter your details.</p>
+            <div class="input-group">
+                <input type="text" id="login-name" placeholder="Account Name" required>
+                <input type="text" id="login-student-no" placeholder="Student Number" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button class="primary-btn" onclick="handleLogin()">Login</button>
+            </div>
+            <hr>
+            <div class="register-prompt">
+                <span>Don't have an account?</span>
+                <button class="text-btn" onclick="toggleModal(true)">Register here</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content / Dashboard (Hidden by default) -->
+    <section id="dashboard-section" class="view-section" style="display: none;">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <button class="secondary-btn" onclick="location.reload()">Logout</button>
+        </div>
+        <div class="dashboard-content">
+            <p>Welcome back! This is your blank canvas for the next phase.</p>
+            <!-- Feed/Content goes here later -->
+        </div>
+    </section>
 
     <!-- Registration Pop-up (Modal) -->
-    <div id="reg-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal(false)">&times;</span>
-            <h2>Create Account</h2>
+    <div id="reg-modal" class="modal" style="display: none;">
+        <div class="modal-content form-card">
+            <span class="close-btn" onclick="toggleModal(false)">&times;</span>
+            <h2>Create an Account</h2>
             <div class="input-group">
-                <input type="text" id="reg-name" placeholder="Full Name">
-                <input type="text" id="reg-student-no" placeholder="Student Number">
-                <input type="password" id="reg-password" placeholder="Password">
-                <button onclick="handleRegister()">Submit Registration</button>
+                <input type="text" id="reg-name" placeholder="Account Name" required>
+                <input type="text" id="reg-student-no" placeholder="Student Number" required>
+                <input type="password" id="reg-password" placeholder="Password" required>
+                <button class="primary-btn" onclick="handleRegister()">Submit Registration</button>
             </div>
         </div>
     </div>
