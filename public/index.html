@@ -16,7 +16,7 @@
         </div>
         <div class="nav-links">
             <button class="nav-btn" onclick="showSection('home-section')">Home</button>
-            <button class="nav-btn" onclick="showSection('login-section')">Login / Register</button>
+            <button id="nav-login-btn" class="nav-btn" onclick="showSection('login-section')">Login / Register</button>
         </div>
     </nav>
 
@@ -30,9 +30,13 @@
         <!-- Create Post Card -->
         <div class="card post-create-card">
             <h3>Create a Chika</h3>
-            <textarea id="post-input" placeholder="Share something with your fellow Iskolar..." rows="3"></textarea>
-            <div class="post-actions">
-                <button class="primary-btn" onclick="handleCreatePost()">Post</button>
+            <div class="input-group">
+                <!-- Added Title field to satisfy required backend 'title' column -->
+                <input type="text" id="post-title" placeholder="Title of your post..." required style="margin-bottom: 8px;">
+                <textarea id="post-content" placeholder="Share something with your fellow Iskolar..." rows="3" required></textarea>
+            </div>
+            <div class="post-actions" style="margin-top: 10px;">
+                <button class="primary-btn" onclick="handleCreatePost(event)">Post</button>
             </div>
         </div>
 
@@ -48,7 +52,6 @@
             <h2>Sign In</h2>
             <p>Welcome back! Please enter your account details.</p>
             <div class="input-group">
-                <input type="text" id="login-name" placeholder="Account Name" required>
                 <input type="text" id="login-student-no" placeholder="Student Number" required>
                 <input type="password" id="login-password" placeholder="Password" required>
                 <button class="primary-btn" onclick="handleLogin()">Login</button>
@@ -66,7 +69,7 @@
         <div class="dashboard-header card">
             <h1>Dashboard</h1>
             <p>Welcome to your personal account hub.</p>
-            <button class="secondary-btn" onclick="location.reload()">Logout</button>
+            <button class="secondary-btn" onclick="handleLogout()">Logout</button>
         </div>
     </section>
 
@@ -76,9 +79,9 @@
             <span class="close-btn" onclick="toggleModal(false)">&times;</span>
             <h2>Create an Account</h2>
             <div class="input-group">
-                <input type="text" id="reg-name" placeholder="Account Name" required>
+                <input type="text" id="reg-name" placeholder="Full Name" required>
                 <input type="text" id="reg-student-no" placeholder="Student Number" required>
-                <input type="password" id="reg-password" placeholder="Password" required>
+                <input type="password" id="reg-password" placeholder="Password (min 6 characters)" required>
                 <button class="primary-btn" onclick="handleRegister()">Submit Registration</button>
             </div>
         </div>
