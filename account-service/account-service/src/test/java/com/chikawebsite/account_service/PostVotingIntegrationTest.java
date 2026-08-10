@@ -1,12 +1,12 @@
 package com.chikawebsite.account_service;
 
-import com.chikawebsite.account_service.dto.LoginRequest;
-import com.chikawebsite.account_service.dto.PostCreateRequest;
-import com.chikawebsite.account_service.dto.SignupRequest;
-import com.chikawebsite.account_service.repository.PostRepository;
-import com.chikawebsite.account_service.repository.UserProfileRepository;
-import com.chikawebsite.account_service.repository.UserRepository;
-import com.chikawebsite.account_service.repository.VoteRepository;
+import com.chikawebsite.account_service.auth.LoginRequest;
+import com.chikawebsite.account_service.post.PostCreateRequest;
+import com.chikawebsite.account_service.auth.SignupRequest;
+import com.chikawebsite.account_service.post.PostRepository;
+import com.chikawebsite.account_service.profile.UserProfileRepository;
+import com.chikawebsite.account_service.common.UserRepository;
+import com.chikawebsite.account_service.post.VoteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,9 @@
 package com.chikawebsite.account_service;
 
-import com.chikawebsite.account_service.dto.LoginRequest;
-import com.chikawebsite.account_service.dto.SignupRequest;
-import com.chikawebsite.account_service.model.User;
-import com.chikawebsite.account_service.repository.UserRepository;
+import com.chikawebsite.account_service.auth.LoginRequest;
+import com.chikawebsite.account_service.auth.SignupRequest;
+import com.chikawebsite.account_service.common.User;
+import com.chikawebsite.account_service.common.UserRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
