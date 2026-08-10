@@ -1,6 +1,8 @@
 package com.chikawebsite.account_service.common.config;
 
 import com.chikawebsite.account_service.common.TokenService;
+import com.chikawebsite.account_service.common.UserRepository;
+import com.chikawebsite.account_service.common.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +23,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final TokenService tokenService;
+    private final UserRepository userRepository;
 
-    public TokenAuthenticationFilter(TokenService tokenService) {
+    public TokenAuthenticationFilter(TokenService tokenService, UserRepository userRepository) {
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -40,9 +44,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length()).trim();
 
             tokenService.resolveEmail(token).ifPresent(email -> {
+                String role = userRepository.findByEmail(email)
+                        .map(User::getRole)
+                        .orElse("USER");
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                email, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
+                                email, null, AuthorityUtils.createAuthorityList("ROLE_" + role.toUpperCase()));
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             });

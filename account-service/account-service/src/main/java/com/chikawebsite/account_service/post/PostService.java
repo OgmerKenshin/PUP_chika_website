@@ -14,10 +14,14 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
+    private final com.chikawebsite.account_service.profile.UserProfileRepository userProfileRepository;
 
-    public PostService(PostRepository postRepository, VoteRepository voteRepository) {
+    public PostService(PostRepository postRepository,
+                       VoteRepository voteRepository,
+                       com.chikawebsite.account_service.profile.UserProfileRepository userProfileRepository) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
+        this.userProfileRepository = userProfileRepository;
     }
 
     @Transactional
@@ -50,8 +54,8 @@ public class PostService {
     public void delete(User user, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post " + postId + " not found"));
-        if (!post.getAuthor().getId().equals(user.getId())) {
-            throw new ForbiddenOperationException("Only the author can delete this post");
+        if (!post.getAuthor().getId().equals(user.getId()) && !"ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new ForbiddenOperationException("Only the author or an admin can delete this post");
         }
         voteRepository.deleteByPostId(postId);
         postRepository.delete(post);
@@ -94,12 +98,17 @@ public class PostService {
     }
 
     private PostResponse toResponse(Post post) {
+        String pfpUrl = userProfileRepository.findByUser(post.getAuthor())
+                .map(com.chikawebsite.account_service.profile.UserProfile::getProfilePictureUrl)
+                .orElse(null);
+
         return new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getAuthor().getId(),
                 post.getAuthor().getName(),
+                pfpUrl,
                 post.getVoteCount(),
                 post.getCreatedAt());
     }

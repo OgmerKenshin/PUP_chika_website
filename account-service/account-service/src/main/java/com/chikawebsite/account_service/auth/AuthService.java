@@ -32,10 +32,21 @@ public class AuthService {
             throw new EmailAlreadyExistsException("An account with email '" + email + "' already exists");
         }
 
+        String role = request.role();
+        if (role == null || role.isBlank()) {
+            role = "USER";
+        } else {
+            role = role.trim().toUpperCase();
+            if (!role.equals("USER") && !role.equals("ADMIN")) {
+                role = "USER";
+            }
+        }
+
         User user = User.builder()
                 .name(request.name().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.password()))
+                .role(role)
                 .build();
 
         User saved = userRepository.save(user);
@@ -47,7 +58,8 @@ public class AuthService {
                 token,
                 saved.getId(),
                 saved.getName(),
-                saved.getEmail()
+                saved.getEmail(),
+                saved.getRole()
         );
     }
 
@@ -69,7 +81,8 @@ public class AuthService {
                 token,
                 user.getId(),
                 user.getName(),
-                user.getEmail()
+                user.getEmail(),
+                user.getRole()
         );
     }
 }
