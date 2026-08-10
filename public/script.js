@@ -1,725 +1,293 @@
-const API_BASE = 'http://localhost:8080/api';
+// ==========================================
+// 1. CONFIGURATION & STATE MANAGEMENT
+// ==========================================
 
-// --- ROUTING & VIEW CONTROLLER ---
-const ROUTE_VIEWS = {
-    'login': 'auth-container',
-    'register': 'auth-container',
-    'feed': 'app-container',
-    'profile': 'app-container',
-    'admin': 'app-container'
+const API_BASE_URL = "http://localhost:8080/api";
+
+const ENDPOINTS = {
+    SIGNUP: `${API_BASE_URL}/auth/signup`,
+    LOGIN: `${API_BASE_URL}/auth/login`,
+    LOGOUT: `${API_BASE_URL}/auth/logout`,
+    POSTS: `${API_BASE_URL}/posts`,
+    PROFILE: `${API_BASE_URL}/users/profile`,
+    DASHBOARD: `${API_BASE_URL}/dashboard/summary`
 };
 
-const CONTENT_VIEWS = ['feed', 'profile', 'admin'];
-
-function showScreen(route) {
-    // Determine main block visibility
-    const targetMainContainer = ROUTE_VIEWS[route];
-    if (targetMainContainer === 'auth-container') {
-        document.getElementById('auth-container').classList.remove('hidden');
-        document.getElementById('app-container').classList.add('hidden');
-        
-        // Toggle forms
-        if (route === 'login') {
-            switchAuthTab('login');
-        } else {
-            switchAuthTab('register');
-        }
-    } else {
-        document.getElementById('auth-container').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-        
-        // Toggle inner content panels
-        CONTENT_VIEWS.forEach(cv => {
-            const panel = document.getElementById(`view-${cv}`);
-            if (cv === route) {
-                panel.classList.remove('hidden');
-            } else {
-                panel.classList.add('hidden');
-            }
-            
-            // Sidebar active link indicator
-            const navLink = document.getElementById(`nav-${cv}`);
-            if (navLink) {
-                if (cv === route) {
-                    navLink.classList.add('active');
-                } else {
-                    navLink.classList.remove('active');
-                }
-            }
-        });
-        
-        // Set page header title
-        const titles = {
-            'feed': 'Campus Chika',
-            'profile': 'Profile Settings',
-            'admin': 'Administrator Panel'
-        };
-        document.getElementById('page-title').textContent = titles[route] || 'Campus Chika';
-        
-        // Execute route-specific loading
-        if (route === 'feed') {
-            loadPosts();
-            loadDashboardStats();
-        } else if (route === 'profile') {
-            loadProfile();
-        } else if (route === 'admin') {
-            loadAdminPanel();
-        }
-    }
-}
-
-function navigateTo(route) {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-
-    if (!token && route !== 'login' && route !== 'register') {
-        // Force authentication
-        showToast('Authentication required. Please sign in.', 'error');
-        location.hash = '#login';
-        showScreen('login');
-        return;
-    }
-
-    if (token && (route === 'login' || route === 'register')) {
-        // Already logged in, redirect to feed
-        location.hash = '#feed';
-        showScreen('feed');
-        return;
-    }
-
-    if (route === 'admin' && role !== 'ADMIN') {
-        // Enforce admin permission layer
-        showToast('Unauthorized: Admins only.', 'error');
-        location.hash = '#feed';
-        showScreen('feed');
-        return;
-    }
-
-    location.hash = '#' + route;
-    showScreen(route);
-}
-
-// Initial Routing check on load
-window.addEventListener('load', () => {
-    const route = location.hash.replace('#', '') || 'feed';
-    
-    // Hide/Show Admin Nav Item based on Role
-    const role = localStorage.getItem('role');
-    const adminNav = document.getElementById('nav-admin');
-    if (role === 'ADMIN') {
-        adminNav.classList.remove('hidden');
-    } else {
-        adminNav.classList.add('hidden');
-    }
-    
-    // Render sidebar if user is logged in
-    if (localStorage.getItem('token')) {
-        updateSidebarDisplay();
-    }
-    
-    navigateTo(route);
+window.addEventListener('DOMContentLoaded', () => {
+    fetchPosts();
+    checkAuthStatus();
 });
 
-// Watch hash change
-window.addEventListener('hashchange', () => {
-    const route = location.hash.replace('#', '') || 'feed';
-    navigateTo(route);
-});
+// Helper to retrieve stored auth token
+function getAuthToken() {
+    return localStorage.getItem('jwtToken');
+}
 
-function switchAuthTab(tab) {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-    
-    if (tab === 'login') {
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-    } else {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-        tabLogin.classList.remove('active');
-        tabRegister.classList.add('active');
+// Helper to generate auth headers
+function getAuthHeaders() {
+    const token = getAuthToken();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+}
+
+// ==========================================
+// 2. SPA NAVIGATION & MODAL CONTROLS
+// ==========================================
+
+function showSection(sectionId) {
+    document.querySelectorAll('.view-section').forEach(section => {
+        section.style.display = 'none';
+    });
+
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
     }
 }
 
-// --- AUTHENTICATION ACTIONS ---
-async function handleLogin() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const loader = document.getElementById('login-loader');
+function toggleModal(show) {
+    const modal = document.getElementById('reg-modal');
+    modal.style.display = show ? 'flex' : 'none';
+}
+
+function checkAuthStatus() {
+    const token = getAuthToken();
+    const loginNavBtn = document.getElementById('nav-login-btn');
     
-    loader.classList.remove('hidden');
-    
-    try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            throw new Error(data.message || 'Failed to authenticate');
-        }
-        
-        // Save auth details
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('email', data.email);
-        localStorage.setItem('name', data.name);
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('userId', data.userId);
-        
-        showToast('Successfully signed in!', 'success');
-        
-        // Show/hide admin panel option
-        const adminNav = document.getElementById('nav-admin');
-        if (data.role === 'ADMIN') {
-            adminNav.classList.remove('hidden');
-        } else {
-            adminNav.classList.add('hidden');
-        }
-        
-        // Load user profile to hydrate sidebar
-        await updateSidebarDisplay();
-        
-        // Navigate
-        location.hash = '#feed';
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    } finally {
-        loader.classList.add('hidden');
+    if (token && loginNavBtn) {
+        loginNavBtn.textContent = 'Dashboard';
+        loginNavBtn.onclick = () => showSection('dashboard-section');
     }
 }
 
+// ==========================================
+// 3. AUTHENTICATION (JWT BASED)
+// ==========================================
+
+// Matches SignupRequest DTO
 async function handleRegister() {
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    const role = document.getElementById('reg-role').value;
-    const loader = document.getElementById('register-loader');
-    
-    loader.classList.remove('hidden');
-    
+    const accountName = document.getElementById('reg-name').value.trim();
+    const studentNo = document.getElementById('reg-student-no').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+
+    if (!accountName || !studentNo || !password) {
+        alert('Please fill out all fields.');
+        return;
+    }
+
+    // Append domain if backend requires email format validation
+    const formattedEmail = studentNo.includes('@') 
+        ? studentNo 
+        : `${studentNo}@iskolar.pup.edu.ph`;
+
+    const signupPayload = { 
+        name: accountName, 
+        email: formattedEmail, 
+        password: password 
+    };
+
     try {
-        const res = await fetch(`${API_BASE}/auth/signup`, {
+        const response = await fetch(ENDPOINTS.SIGNUP, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role })
+            body: JSON.stringify(signupPayload)
         });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            if (data.errors) {
-                // validation error list
-                const errorMsg = Object.values(data.errors).join(', ');
-                throw new Error(errorMsg);
-            }
-            throw new Error(data.message || 'Registration failed');
-        }
-        
-        showToast('Registration successful! Logging in...', 'success');
-        
-        // Auto-login with signup token
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('email', data.email);
-        localStorage.setItem('name', data.name);
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('userId', data.userId);
-        
-        const adminNav = document.getElementById('nav-admin');
-        if (data.role === 'ADMIN') {
-            adminNav.classList.remove('hidden');
+
+        if (response.ok || response.status === 201) {
+            alert('Registration Successful! Please sign in.');
+            toggleModal(false);
+            showSection('login-section');
         } else {
-            adminNav.classList.add('hidden');
+            const errorData = await response.json().catch(() => ({}));
+            alert(`Registration failed: ${errorData.message || 'Invalid details'}`);
         }
-        
-        await updateSidebarDisplay();
-        location.hash = '#feed';
-        
     } catch (err) {
-        showToast(err.message, 'error');
-    } finally {
-        loader.classList.add('hidden');
+        console.error("Signup error:", err);
+    }
+}
+
+// Matches LoginRequest DTO
+async function handleLogin() {
+    const identifierInput = document.getElementById('login-student-no').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+
+    // Ensure email formatting matches what was stored during signup
+    const formattedEmail = identifierInput.includes('@') 
+        ? identifierInput 
+        : `${identifierInput}@iskolar.pup.edu.ph`;
+
+    const loginPayload = {
+        email: formattedEmail, 
+        password: password
+    };
+
+    try {
+        const response = await fetch(ENDPOINTS.LOGIN, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(loginPayload)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.token) {
+                localStorage.setItem('jwtToken', data.token);
+            }
+            alert('Login successful!');
+            showSection('dashboard-section');
+            checkAuthStatus(); // Update navbar button
+        } else {
+            alert('Login failed: Invalid credentials.');
+        }
+    } catch (err) {
+        console.error("Login error:", err);
     }
 }
 
 async function handleLogout() {
-    const token = localStorage.getItem('token');
-    
-    // Attempt backend invalidation (optional but clean)
+    const token = getAuthToken();
+
     if (token) {
         try {
-            await fetch(`${API_BASE}/auth/logout`, {
+            await fetch(ENDPOINTS.LOGOUT, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: getAuthHeaders()
             });
-        } catch (e) {
-            console.warn('Backend logout failed/ignored:', e);
+        } catch (err) {
+            console.warn("Server logout notification failed:", err);
         }
     }
-    
-    // Clear storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('name');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userId');
-    
-    showToast('Logged out successfully.', 'success');
-    location.hash = '#login';
+
+    // Clear local storage and reset
+    localStorage.removeItem('jwtToken');
+    location.reload();
 }
 
-// --- PROFILE & USER MANAGEMENT ---
-async function loadProfile() {
-    const token = localStorage.getItem('token');
-    
+// ==========================================
+// 4. POST FEED & VOTING
+// ==========================================
+
+async function fetchPosts() {
     try {
-        const res = await fetch(`${API_BASE}/users/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) throw new Error('Could not load profile details');
-        
-        const profile = await res.json();
-        
-        document.getElementById('profile-bio').value = profile.bio || '';
-        document.getElementById('profile-location').value = profile.location || '';
-        document.getElementById('profile-avatar-url').value = profile.profilePictureUrl || '';
-        
-        updateAvatarPreview(profile.profilePictureUrl);
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-async function handleUpdateProfile() {
-    const token = localStorage.getItem('token');
-    const bio = document.getElementById('profile-bio').value;
-    const locationVal = document.getElementById('profile-location').value;
-    const profilePictureUrl = document.getElementById('profile-avatar-url').value;
-    
-    try {
-        const res = await fetch(`${API_BASE}/users/profile`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ bio, location: locationVal, profilePictureUrl })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            if (data.errors) {
-                throw new Error(Object.values(data.errors).join(', '));
-            }
-            throw new Error(data.message || 'Update failed');
-        }
-        
-        showToast('Profile updated successfully!', 'success');
-        
-        // Refresh sidebar
-        await updateSidebarDisplay();
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-function updateAvatarPreview(url) {
-    const preview = document.getElementById('profile-avatar-preview');
-    const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
-    preview.src = url && url.trim() !== '' ? url : defaultAvatar;
-}
-
-function selectPresetAvatar(url) {
-    document.getElementById('profile-avatar-url').value = url;
-    updateAvatarPreview(url);
-    showToast('Preset avatar selected. Save changes to apply.', 'success');
-}
-
-async function updateSidebarDisplay() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    
-    const name = localStorage.getItem('name');
-    const email = localStorage.getItem('email');
-    const role = localStorage.getItem('role');
-    
-    document.getElementById('sidebar-name').textContent = name;
-    document.getElementById('sidebar-email').textContent = email;
-    document.getElementById('sidebar-role-badge').textContent = role;
-    
-    // Set gold badge class if admin
-    const badge = document.getElementById('sidebar-role-badge');
-    if (role === 'ADMIN') {
-        badge.style.background = 'var(--accent-gold)';
-        badge.style.color = 'var(--text-dark)';
-    } else {
-        badge.style.background = 'var(--primary-color)';
-        badge.style.color = 'white';
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/users/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-            const profile = await res.json();
-            
-            // Set Avatar
-            const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
-            const avatarSrc = profile.profilePictureUrl && profile.profilePictureUrl.trim() !== '' 
-                ? profile.profilePictureUrl 
-                : defaultAvatar;
-                
-            document.getElementById('sidebar-avatar').src = avatarSrc;
-            document.getElementById('header-avatar').src = avatarSrc;
-            
-            // Set Bio
-            document.getElementById('sidebar-bio-box').textContent = profile.bio && profile.bio.trim() !== '' 
-                ? `"${profile.bio}"` 
-                : '"No bio shared yet."';
-                
-            // Set Location
-            document.getElementById('sidebar-location').textContent = profile.location && profile.location.trim() !== '' 
-                ? profile.location 
-                : 'PUP Campus';
-        }
-    } catch (e) {
-        console.error('Failed to load profile for sidebar', e);
-    }
-}
-
-// --- FEED & POSTS ---
-async function loadPosts() {
-    const container = document.getElementById('posts-container');
-    container.innerHTML = `
-        <div class="loading-state">
-            <span class="spinner"></span>
-            <p>Fetching the latest stories...</p>
-        </div>
-    `;
-    
-    try {
-        const res = await fetch(`${API_BASE}/posts`);
-        if (!res.ok) throw new Error('Could not load recent chika feed');
-        
-        const posts = await res.json();
-        
-        if (posts.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <p>🙊 No chika yet. Be the first to share your story!</p>
-                </div>
-            `;
+        const response = await fetch(ENDPOINTS.POSTS);
+        if (response.ok) {
+            const posts = await response.json();
+            renderPosts(posts);
             return;
         }
-        
-        const currentUserId = parseInt(localStorage.getItem('userId'));
-        const userRole = localStorage.getItem('role');
-        
-        container.innerHTML = '';
-        
-        posts.forEach(post => {
-            const date = new Date(post.createdAt).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            // Profile image fallback
-            let avatarHtml = '';
-            if (post.authorProfilePictureUrl && post.authorProfilePictureUrl.trim() !== '') {
-                avatarHtml = `<img src="${post.authorProfilePictureUrl}" alt="${post.authorName}" class="author-avatar">`;
-            } else {
-                const initial = post.authorName ? post.authorName.charAt(0) : '?';
-                avatarHtml = `<div class="author-initial-avatar">${initial}</div>`;
-            }
-            
-            // Delete button authorization check (Owner OR Admin)
-            const showDelete = post.authorId === currentUserId || userRole === 'ADMIN';
-            const deleteBtnHtml = showDelete ? `
-                <button class="delete-post-btn" onclick="handleDeletePost(${post.id})">
-                    <svg class="icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                    <span>Moderate</span>
-                </button>
-            ` : '';
-
-            // Render post card
-            const card = document.createElement('div');
-            card.className = 'post-card';
-            card.innerHTML = `
-                <div class="post-avatar-col">
-                    ${avatarHtml}
-                </div>
-                <div class="post-body-col">
-                    <div class="post-header">
-                        <div class="post-meta">
-                            <span class="author-name">${escapeHtml(post.authorName)}</span>
-                            <span class="author-badge ${post.authorId === 1 ? 'admin' : 'student'}">
-                                ${post.authorId === 1 ? 'Admin' : 'Student'}
-                            </span>
-                            <span class="post-time">• ${date}</span>
-                        </div>
-                    </div>
-                    <h4 class="post-card-title">${escapeHtml(post.title)}</h4>
-                    <p class="post-content">${escapeHtml(post.content)}</p>
-                    
-                    <div class="post-actions">
-                        <div class="vote-controls">
-                            <button class="vote-btn upvote" onclick="handleVote(${post.id}, 'UPVOTE')" title="Upvote">
-                                <svg class="vote-icon" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
-                            </button>
-                            <span id="vote-score-${post.id}" class="vote-score">${post.voteCount}</span>
-                            <button class="vote-btn downvote" onclick="handleVote(${post.id}, 'DOWNVOTE')" title="Downvote">
-                                <svg class="vote-icon" viewBox="0 0 24 24"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17L5.42 10.58 4 12l8 8 8-8z"/></svg>
-                            </button>
-                        </div>
-                        ${deleteBtnHtml}
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-        
     } catch (err) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <p class="error-text">❌ Failed to load feed: ${err.message}</p>
-            </div>
-        `;
+        console.warn("Backend unreachable:", err);
     }
 }
 
-async function handleCreatePost() {
-    const token = localStorage.getItem('token');
-    const title = document.getElementById('post-title').value;
-    const content = document.getElementById('post-content').value;
-    
-    try {
-        const res = await fetch(`${API_BASE}/posts`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ title, content })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            if (data.errors) {
-                throw new Error(Object.values(data.errors).join(', '));
-            }
-            throw new Error(data.message || 'Could not post');
-        }
-        
-        showToast('Your chika has been posted!', 'success');
-        document.getElementById('post-title').value = '';
-        document.getElementById('post-content').value = '';
-        
-        loadPosts();
-        loadDashboardStats();
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
+// Matches PostCreateRequest DTO
+async function handleCreatePost(event) {
+    // Prevent default form submission reload if called inside a form
+    if (event) event.preventDefault();
 
-async function handleVote(postId, type) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        showToast('Please log in to vote.', 'error');
+    const titleInput = document.getElementById('post-title');
+    const contentInput = document.getElementById('post-content');
+
+    const title = titleInput ? titleInput.value.trim() : '';
+    const content = contentInput ? contentInput.value.trim() : '';
+
+    // 1. Validation check
+    if (!title || !content) {
+        alert('Please provide both a title and content for your post.');
         return;
     }
-    
+
+    // 2. Authentication check
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('You must be logged in to create a post.');
+        showSection('login-section');
+        return;
+    }
+
+    const postPayload = { title, content };
+
     try {
-        const res = await fetch(`${API_BASE}/posts/${postId}/vote`, {
+        const response = await fetch(ENDPOINTS.POSTS, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ type })
+            body: JSON.stringify(postPayload)
         });
-        
-        const data = await res.json();
-        
-        if (!res.ok) throw new Error(data.message || 'Vote failed');
-        
-        // Update UI
-        const scoreSpan = document.getElementById(`vote-score-${postId}`);
-        if (scoreSpan) {
-            scoreSpan.textContent = data.voteCount;
+
+        if (response.ok || response.status === 201) {
+            alert('Post published successfully!');
+
+            // Clear input fields
+            if (titleInput) titleInput.value = '';
+            if (contentInput) contentInput.value = '';
+
+            // Reload feed/posts
+            fetchPosts();
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            alert(`Failed to post: ${errorData.message || 'Unauthorized or invalid data.'}`);
         }
-        
-        // Simple visual feedback
-        showToast(type === 'UPVOTE' ? 'Upvoted!' : 'Downvoted!', 'success');
-        
     } catch (err) {
-        showToast(err.message, 'error');
+        console.error('Error creating post:', err);
+        alert('Unable to connect to backend server. Make sure Spring Boot is running.');
     }
 }
 
-async function handleDeletePost(postId) {
-    if (!confirm('Are you sure you want to delete this Chika? This cannot be undone.')) return;
-    
-    const token = localStorage.getItem('token');
-    
-    try {
-        const res = await fetch(`${API_BASE}/posts/${postId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) throw new Error('Failed to delete post');
-        
-        showToast('Chika deleted.', 'success');
-        loadPosts();
-        loadDashboardStats();
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
+function renderPosts(posts) {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
 
-// --- ADMIN MANAGEMENT ACTIONS ---
-async function loadAdminPanel() {
-    const token = localStorage.getItem('token');
-    const tbody = document.getElementById('admin-user-list');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center">Loading accounts...</td>
-        </tr>
-    `;
-    
-    try {
-        const res = await fetch(`${API_BASE}/admin/users`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+    container.innerHTML = '';
+
+    if (!posts || posts.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;">No chikas yet. Be the first to post!</p>';
+        return;
+    }
+
+    // Reverse so newest posts appear at the top
+    posts.slice().reverse().forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'card post-card';
+        postElement.style.marginTop = '15px';
         
-        if (!res.ok) throw new Error('Unable to retrieve admin user list');
-        
-        const users = await res.json();
-        tbody.innerHTML = '';
-        
-        const currentUserId = parseInt(localStorage.getItem('userId'));
-        
-        users.forEach(user => {
-            const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
-            const avatarSrc = user.profilePictureUrl && user.profilePictureUrl.trim() !== '' 
-                ? user.profilePictureUrl 
-                : defaultAvatar;
-                
-            const roleBadgeClass = user.role === 'ADMIN' ? 'author-badge admin' : 'author-badge student';
-            
-            // Prevent self-deletion
-            const isSelf = user.id === currentUserId;
-            const actionBtn = isSelf ? `
-                <span class="text-muted" style="font-size:0.8rem; font-weight:600;">Active Session</span>
-            ` : `
-                <button class="admin-delete-btn" onclick="handleDeleteUser(${user.id})">Delete User</button>
-            `;
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <div class="admin-user-cell">
-                        <img src="${avatarSrc}" alt="Avatar">
-                        <span>${escapeHtml(user.name)}</span>
-                    </div>
-                </td>
-                <td>${escapeHtml(user.email)}</td>
-                <td><span class="${roleBadgeClass}">${user.role}</span></td>
-                <td>${escapeHtml(user.location || 'Not Specified')}</td>
-                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(user.bio || '')}">
-                    ${escapeHtml(user.bio || '—')}
-                </td>
-                <td>${actionBtn}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-    } catch (err) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center error-text">❌ Failed: ${err.message}</td>
-            </tr>
+        postElement.innerHTML = `
+            <div class="post-header">
+                <h4 style="margin: 0; color: #333;">${escapeHTML(post.title || 'Untitled')}</h4>
+                <div style="font-size: 0.85em; color: #777; margin-bottom: 10px;">
+                    <span class="post-author">By: ${escapeHTML(post.authorName || post.author || 'Anonymous')}</span> • 
+                    <span class="post-timestamp">${post.createdAt || post.timestamp || 'Just now'}</span>
+                </div>
+            </div>
+            <div class="post-content" style="margin-bottom: 15px;">
+                ${escapeHTML(post.content)}
+            </div>
+            <div class="post-footer" style="display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                <button class="text-btn" onclick="handleVote(${post.id}, 'UPVOTE')">👍 ${post.upvotes || 0}</button>
+                <button class="text-btn" onclick="handleVote(${post.id}, 'DOWNVOTE')">👎 ${post.downvotes || 0}</button>
+            </div>
         `;
+        container.appendChild(postElement);
+    });
+}
+
+function escapeHTML(str) {
+    return String(str).replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
+}
+
+// Placeholder for the voting buttons in renderPosts
+async function handleVote(postId, voteType) {
+    const token = getAuthToken();
+    if (!token) {
+        alert("Please log in to vote.");
+        return;
     }
-}
-
-async function handleDeleteUser(userId) {
-    if (!confirm('WARNING: Deleting this user will permanently remove their profile, posts, and all votes they have cast. Proceed?')) return;
-    
-    const token = localStorage.getItem('token');
-    
-    try {
-        const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) throw new Error('Deletion failed');
-        
-        showToast('User account deleted successfully.', 'success');
-        loadAdminPanel();
-        
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-// --- SYSTEM STATISTICS ---
-async function loadDashboardStats() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    
-    try {
-        const res = await fetch(`${API_BASE}/dashboard/summary`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-            const stats = await res.json();
-            document.getElementById('stat-active').textContent = stats.activeSessions;
-            document.getElementById('stat-total').textContent = stats.totalUsers;
-        }
-    } catch (e) {
-        console.warn('Could not load dashboard stats:', e);
-    }
-}
-
-// --- UTILITY FUNCTIONS ---
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.classList.remove('hidden');
-    
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 4000);
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    console.log(`Voting ${voteType} on post ${postId}... (Implement backend connection here)`);
+    // Example: fetch(\`${ENDPOINTS.POSTS}/${postId}/vote\`, { method: 'POST', body: JSON.stringify({type: voteType}) ... })
 }
