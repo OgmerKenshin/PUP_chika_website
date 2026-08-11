@@ -189,3 +189,77 @@ hr {
 .hidden {
     display: none !important;
 }
+
+/* --- 1. Base Variables --- */
+:root {
+  --bg-color: #f4f4f9;      /* Standard light background */
+  --text-color: #333333;    /* Standard dark text */
+  --primary-red: #8a0000;   /* Standard PUP Maroon */
+}
+
+/* --- 2. Dark Mode Override --- */
+body.dark-mode {
+  --bg-color: #0b0b1a;      /* Deep space black */
+  --text-color: #ffffff;    /* White text */
+  --primary-red: #ff0055;   /* Bright neon pink/red */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.4s ease, color 0.4s ease;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* --- 3. Neon Effects --- */
+/* Add this class to any text you want to glow in dark mode */
+body.dark-mode .neon-text {
+  color: var(--primary-red);
+  text-shadow: 0 0 5px var(--primary-red), 0 0 15px var(--primary-red), 0 0 30px var(--primary-red);
+}
+
+/* Add this class to any borders/buttons you want to glow */
+body.dark-mode .neon-border {
+  border-color: var(--primary-red);
+  box-shadow: 0 0 10px var(--primary-red), inset 0 0 10px var(--primary-red);
+  background: transparent;
+}
+
+/* --- 4. Night Sky & Static Stars --- */
+.night-sky {
+  display: none; /* Hidden in light mode */
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: -1;
+  /* Pure CSS generated static stars */
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 150px 70px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #dddddd, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 300px 180px, #ffffff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 350px 350px;
+}
+
+body.dark-mode .night-sky {
+  display: block; /* Show stars in dark mode */
+}
+
+/* --- 5. Shooting Stars --- */
+.shooting-star {
+  position: absolute;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+  transform: rotate(-45deg);
+  opacity: 0;
+  animation: shoot 5s infinite linear;
+}
+
+@keyframes shoot {
+  0% { transform: translate(0, 0) rotate(-45deg); opacity: 1; }
+  15% { transform: translate(-300px, 300px) rotate(-45deg); opacity: 0; }
+  100% { opacity: 0; } /* Keeps it hidden until the animation loops */
+}
