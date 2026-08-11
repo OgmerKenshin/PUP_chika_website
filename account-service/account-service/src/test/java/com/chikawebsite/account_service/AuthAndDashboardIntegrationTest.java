@@ -40,10 +40,14 @@ class AuthAndDashboardIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private com.chikawebsite.account_service.profile.UserProfileRepository userProfileRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void clean() {
+        userProfileRepository.deleteAll();
         userRepository.deleteAll();
     }
 

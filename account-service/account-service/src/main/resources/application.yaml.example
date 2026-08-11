@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    # Connection URL for Oracle SQL (jdbc:oracle:thin:@<host>:<port>/<service_name> or :<sid>)
+    url: jdbc:oracle:thin:@${DB_HOST:localhost}:${DB_PORT:1521}/${DB_NAME:XEPDB1}
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: ${DB_USERNAME:SYSTEM}
+    password: ${DB_PASSWORD:password}
+
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    # Disable Open-Session-In-View for scope efficiency
+    open-in-view: false
+    hibernate:
+      # Automatically manages schema migrations/updates in Oracle
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  application:
+    name: account-service
