@@ -59,7 +59,7 @@ public class AuthService {
                 saved.getId(),
                 saved.getName(),
                 saved.getEmail(),
-                saved.getRole()
+                saved.getRole() != null ? saved.getRole() : "ROLE_USER"
         );
     }
 
@@ -82,7 +82,7 @@ public class AuthService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole() != null ? user.getRole() : "ROLE_USER"
         );
     }
 }

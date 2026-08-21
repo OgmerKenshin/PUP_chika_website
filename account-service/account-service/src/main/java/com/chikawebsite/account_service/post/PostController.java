@@ -38,6 +38,14 @@ public class PostController {
         return ResponseEntity.ok(postService.get(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponse> update(Authentication authentication,
+                                               @PathVariable Long id,
+                                               @Valid @RequestBody PostCreateRequest request) {
+        PostResponse response = postService.update(currentUserService.require(authentication), id, request);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(Authentication authentication, @PathVariable Long id) {
         postService.delete(currentUserService.require(authentication), id);

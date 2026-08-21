@@ -1,8 +1,8 @@
 package com.chikawebsite.account_service.common.config;
 
 import com.chikawebsite.account_service.common.TokenService;
-import com.chikawebsite.account_service.common.UserRepository;
 import com.chikawebsite.account_service.common.User;
+import com.chikawebsite.account_service.common.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,12 +44,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length()).trim();
 
             tokenService.resolveEmail(token).ifPresent(email -> {
-                String role = userRepository.findByEmail(email)
-                        .map(User::getRole)
-                        .orElse("USER");
+                String rawRole = userRepository.findByEmail(email)
+                        .map(u -> u.getRole() != null ? u.getRole() : "ROLE_USER")
+                        .orElse("ROLE_USER");
+                String grantedRole = rawRole.startsWith("ROLE_") ? rawRole : "ROLE_" + rawRole.toUpperCase();
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                email, null, AuthorityUtils.createAuthorityList("ROLE_" + role.toUpperCase()));
+                                email, null, AuthorityUtils.createAuthorityList(grantedRole));
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             });

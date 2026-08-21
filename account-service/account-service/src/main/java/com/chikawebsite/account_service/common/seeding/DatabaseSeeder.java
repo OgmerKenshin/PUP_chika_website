@@ -25,9 +25,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        seedUser("admin", "admin@example.com", "admin123", "ADMIN");
-        seedUser("Adrian", "adrian@example.com", "password123", "USER");
-        seedUser("Kenshin", "kenshin@example.com", "password123", "USER");
+        seedUser("System Administrator", "admin@iskolar.pup.edu.ph", "admin123", "ROLE_ADMIN");
+        seedUser("admin", "admin@example.com", "admin123", "ROLE_ADMIN");
+        seedUser("Adrian", "adrian@example.com", "password123", "ROLE_USER");
+        seedUser("Kenshin", "kenshin@example.com", "password123", "ROLE_USER");
     }
 
     private void seedUser(String name, String email, String password, String role) {

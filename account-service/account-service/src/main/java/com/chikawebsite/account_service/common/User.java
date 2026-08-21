@@ -23,8 +23,9 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String role;
+    private String password; // Stored as a BCrypt hash, never plaintext
 
     @Column(nullable = false)
-    private String password;
+    @Builder.Default
+    private String role = "ROLE_USER";
 }

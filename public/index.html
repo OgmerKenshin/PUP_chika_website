@@ -8,93 +8,192 @@
 </head>
 <body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="icon-placeholder"></span>
-            <h2>PUP Chika</h2>
-        </div>
-        <div class="nav-links">
-            <button class="nav-btn" onclick="showSection('home-section')">Home</button>
-            <button id="nav-login-btn" class="nav-btn" onclick="showSection('login-section')">Login / Register</button>
-        </div>
-    </nav>
-
-    <!-- Home / Feed Section -->
-    <section id="home-section" class="view-section">
-        <div class="welcome-container">
-            <h1>Welcome to PUP Chika</h1>
-            <p>Your campus digital tambayan. Connect, share, and stay updated!</p>
-        </div>
-
-        <!-- Create Post Card -->
-        <div class="card post-create-card">
-            <h3>Create a Chika</h3>
-            <div class="input-group">
-                <!-- Added Title field to satisfy required backend 'title' column -->
-                <input type="text" id="post-title" placeholder="Title of your post..." required style="margin-bottom: 8px;">
-                <textarea id="post-content" placeholder="Share something with your fellow Iskolar..." rows="3" required></textarea>
-            </div>
-            <div class="post-actions" style="margin-top: 10px;">
-                <button class="primary-btn" onclick="handleCreatePost(event)">Post</button>
-            </div>
-        </div>
-
-        <!-- Dynamic Feed Container -->
-        <div id="feed-container">
-            <!-- Posts render here via JS -->
-        </div>
-    </section>
-
-    <!-- Login Section -->
-    <section id="login-section" class="view-section" style="display: none;">
-        <div class="form-card">
-            <h2>Sign In</h2>
-            <p>Welcome back! Please enter your account details.</p>
-            <div class="input-group">
-                <input type="text" id="login-student-no" placeholder="Student Number" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button class="primary-btn" onclick="handleLogin()">Login</button>
-            </div>
-            <hr>
-            <div class="register-prompt">
-                <span>Don't have an account?</span>
-                <button class="text-btn" onclick="toggleModal(true)">Register here</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Dashboard Section (Logged In) -->
-    <section id="dashboard-section" class="view-section" style="display: none;">
-        <div class="dashboard-header card">
-            <h1>Dashboard</h1>
-            <p>Welcome to your personal account hub.</p>
-            <button class="secondary-btn" onclick="handleLogout()">Logout</button>
-        </div>
-    </section>
-
-    <!-- Registration Pop-up Modal -->
-    <div id="reg-modal" class="modal" style="display: none;">
-        <div class="modal-content form-card">
-            <span class="close-btn" onclick="toggleModal(false)">&times;</span>
-            <h2>Create an Account</h2>
-            <div class="input-group">
-                <input type="text" id="reg-name" placeholder="Full Name" required>
-                <input type="text" id="reg-student-no" placeholder="Student Number" required>
-                <input type="password" id="reg-password" placeholder="Password (min 6 characters)" required>
-                <button class="primary-btn" onclick="handleRegister()">Submit Registration</button>
-            </div>
-        </div>
-    </div>
-
-        <!-- The Night Sky Background (Place this right after the opening <body> tag) -->
+    <!-- Night Sky Background (Dark Mode) -->
     <div class="night-sky">
         <div class="shooting-star" style="top: 10%; left: 80%; animation-delay: 0s;"></div>
         <div class="shooting-star" style="top: 30%; left: 60%; animation-delay: 2.5s;"></div>
     </div>
 
-<!-- The Toggle Button (Place this in your dashboard navigation or header) -->
-<button id="dark-mode-toggle" class="theme-toggle-btn">Toggle Dark Mode</button>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <a href="#/feed" class="nav-brand" id="nav-brand-link" title="PUP Chika">
+            <span class="brand-icon">🎓</span>
+            <h2>PUP Chika</h2>
+        </a>
+        <div class="nav-links" id="nav-links">
+            <a href="#/feed" id="nav-feed-link" class="nav-btn" style="display: none;">Feed</a>
+            <a href="#/create-post" id="nav-create-link" class="nav-btn create-nav-btn" style="display: none;">+ Post</a>
+            <a href="#/dashboard" id="nav-dashboard-link" class="nav-btn" style="display: none;">Dashboard</a>
+            <button id="nav-logout-btn" class="nav-btn logout-btn" onclick="handleLogout()" style="display: none;">Logout</button>
+            <a href="#/login" id="nav-login-link" class="nav-btn">Sign In</a>
+            <a href="#/signup" id="nav-signup-link" class="nav-btn">Sign Up</a>
+            <button id="dark-mode-toggle" class="theme-toggle-btn" aria-label="Toggle Dark Mode" title="Toggle Dark/Light Mode">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        
+        <!-- Auth Section (Sign In & Sign Up) - Routes: #/login and #/signup -->
+        <section id="auth-section" class="view-section" style="display: none;">
+            <div class="form-card auth-card">
+                <div class="auth-header">
+                    <h2>Welcome to PUP Chika</h2>
+                    <p>Your campus digital tambayan. Connect and share with fellow Iskolars!</p>
+                </div>
+
+                <!-- Auth Tabs: Sign In / Sign Up -->
+                <div class="auth-tabs">
+                    <button id="tab-signin-btn" class="auth-tab-btn active" type="button" onclick="navigateTo('#/login')">Sign In</button>
+                    <button id="tab-signup-btn" class="auth-tab-btn" type="button" onclick="navigateTo('#/signup')">Sign Up</button>
+                </div>
+
+                <!-- Alert / Feedback Banner -->
+                <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+                <!-- Sign In Form -->
+                <div id="signin-form-container">
+                    <form id="signin-form" onsubmit="handleLogin(event)">
+                        <div class="input-group">
+                            <label for="login-student-no">Student Number or Webmail</label>
+                            <input type="text" id="login-student-no" placeholder="e.g. 2021-00000-MN-0" required autocomplete="username">
+                            
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+                            
+                            <button type="submit" class="primary-btn submit-btn">Sign In</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <div class="register-prompt">
+                        <span>Don't have an account yet?</span>
+                        <a href="#/signup" class="text-btn">Create an account</a>
+                    </div>
+                </div>
+
+                <!-- Sign Up Form -->
+                <div id="signup-form-container" style="display: none;">
+                    <form id="signup-form" onsubmit="handleRegister(event)">
+                        <div class="input-group">
+                            <label for="reg-name">Full Name</label>
+                            <input type="text" id="reg-name" placeholder="e.g. Juan Dela Cruz" required autocomplete="name">
+
+                            <label for="reg-student-no">Student Number or Webmail</label>
+                            <input type="text" id="reg-student-no" placeholder="e.g. 2021-00000-MN-0" required autocomplete="username">
+
+                            <label for="reg-password">Password</label>
+                            <input type="password" id="reg-password" placeholder="Minimum 6 characters" minlength="6" required autocomplete="new-password">
+
+                            <button type="submit" class="primary-btn submit-btn">Create Account</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <div class="register-prompt">
+                        <span>Already have an account?</span>
+                        <a href="#/login" class="text-btn">Sign in here</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feed Section (Route: #/feed - Accessible ONLY when authenticated) -->
+        <section id="feed-section" class="view-section" style="display: none;">
+            <div class="welcome-container feed-welcome">
+                <div class="welcome-text">
+                    <h1>Campus Chika Feed</h1>
+                    <p>What's happening in PUP? Speak up or catch up!</p>
+                </div>
+                <a href="#/create-post" class="primary-btn new-chika-btn">+ New Chika</a>
+            </div>
+
+            <!-- Dynamic Feed Container -->
+            <div id="feed-container">
+                <!-- Posts render here via JS -->
+            </div>
+        </section>
+
+        <!-- Dedicated Create Post Section (Route: #/create-post - Accessible ONLY when authenticated) -->
+        <section id="create-post-section" class="view-section" style="display: none;">
+            <div class="card post-create-card">
+                <div class="page-title-header">
+                    <h2>Create a Chika</h2>
+                    <p>Express your thoughts, share announcements, or start a discussion.</p>
+                </div>
+                <form id="create-post-form" onsubmit="handleCreatePost(event)">
+                    <div class="input-group">
+                        <label for="post-title">Post Title</label>
+                        <input type="text" id="post-title" placeholder="Give your chika a catchy headline..." required>
+                        
+                        <label for="post-content">Content</label>
+                        <textarea id="post-content" placeholder="Share the details with your fellow Iskolar..." rows="6" required></textarea>
+                    </div>
+                    <div class="post-actions" style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                        <a href="#/feed" class="secondary-btn" style="text-decoration: none; display: inline-flex; align-items: center;">Cancel</a>
+                        <button type="submit" class="primary-btn">Publish Post</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard Section (Route: #/dashboard - Accessible ONLY when authenticated) -->
+        <section id="dashboard-section" class="view-section" style="display: none;">
+            <div class="dashboard-header card">
+                <h1>Dashboard</h1>
+                <p id="dashboard-user-greeting">Welcome to your personal account hub.</p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="#/feed" class="primary-btn" style="text-decoration: none;">Go to Feed</a>
+                    <a href="#/create-post" class="primary-btn" style="text-decoration: none; background-color: #990000;">+ Create a Post</a>
+                    <button type="button" class="secondary-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Edit Post Modal Popup -->
+    <div id="edit-post-modal" class="modal" style="display: none;">
+        <div class="modal-content form-card" style="max-width: 580px; width: 90%;">
+            <span class="close-btn" onclick="closeEditModal()" title="Close">&times;</span>
+            <div class="page-title-header">
+                <h2>Edit Chika</h2>
+                <p>Update your post details below.</p>
+            </div>
+            <form id="edit-post-form" onsubmit="handleSaveEditedPost(event)">
+                <input type="hidden" id="edit-post-id">
+                <div class="input-group">
+                    <label for="edit-post-title">Post Title</label>
+                    <input type="text" id="edit-post-title" required>
+
+                    <label for="edit-post-content">Content</label>
+                    <textarea id="edit-post-content" rows="6" required></textarea>
+                </div>
+                <div class="post-actions" style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="secondary-btn" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom In-App Delete Post Confirmation Modal -->
+    <div id="delete-post-modal" class="modal" style="display: none;">
+        <div class="modal-content form-card delete-modal-card" style="max-width: 440px; width: 90%; text-align: center;">
+            <div class="delete-modal-icon" style="font-size: 2.2rem; margin-bottom: 8px;">
+                🗑️
+            </div>
+            <div class="page-title-header" style="margin-bottom: 12px;">
+                <h2 style="margin-bottom: 6px;">Delete Post?</h2>
+                <p style="font-size: 0.95rem; line-height: 1.45;">Are you sure you want to permanently delete this post? This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: center; gap: 12px;">
+                <button type="button" class="secondary-btn" onclick="closeDeleteModal()" style="min-width: 100px;">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="primary-btn delete-btn" onclick="executePostDeletion()" style="min-width: 100px; background-color: #c62828;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating In-App Toast Notifications Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="script.js"></script>
 </body>
