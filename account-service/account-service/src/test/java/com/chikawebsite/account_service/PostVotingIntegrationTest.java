@@ -1,7 +1,9 @@
 package com.chikawebsite.account_service;
 
+import com.chikawebsite.account_service.dto.AuthResponse;
 import com.chikawebsite.account_service.dto.LoginRequest;
 import com.chikawebsite.account_service.dto.PostCreateRequest;
+import com.chikawebsite.account_service.dto.PostResponse;
 import com.chikawebsite.account_service.dto.SignupRequest;
 import com.chikawebsite.account_service.repository.PostRepository;
 import com.chikawebsite.account_service.repository.UserProfileRepository;
@@ -15,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -179,8 +180,9 @@ class PostVotingIntegrationTest {
                         .content(json(new PostCreateRequest(title, content))))
                 .andExpect(status().isCreated())
                 .andReturn();
-        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.get("id").asLong();
+        PostResponse postResponse = 
+                objectMapper.readValue(result.getResponse().getContentAsString(), PostResponse.class);
+        return postResponse.id();
     }
 
     private String registerAndLogin(String name, String email, String password) throws Exception {
@@ -194,8 +196,9 @@ class PostVotingIntegrationTest {
                         .content(json(new LoginRequest(email, password))))
                 .andExpect(status().isOk())
                 .andReturn();
-        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.get("token").asText();
+        AuthResponse authResponse = 
+                objectMapper.readValue(result.getResponse().getContentAsString(), AuthResponse.class);
+        return authResponse.token();
     }
 
     private String json(Object value) {

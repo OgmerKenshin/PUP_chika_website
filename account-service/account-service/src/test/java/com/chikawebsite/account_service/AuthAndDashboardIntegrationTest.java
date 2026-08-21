@@ -1,10 +1,10 @@
 package com.chikawebsite.account_service;
 
+import com.chikawebsite.account_service.dto.AuthResponse;
 import com.chikawebsite.account_service.dto.LoginRequest;
 import com.chikawebsite.account_service.dto.SignupRequest;
 import com.chikawebsite.account_service.model.User;
 import com.chikawebsite.account_service.repository.UserRepository;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -191,7 +191,8 @@ class AuthAndDashboardIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.get("token").asText();
+        AuthResponse response = 
+                objectMapper.readValue(result.getResponse().getContentAsString(), AuthResponse.class);
+        return response.token();
     }
 }
