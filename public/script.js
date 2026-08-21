@@ -291,3 +291,23 @@ async function handleVote(postId, voteType) {
     console.log(`Voting ${voteType} on post ${postId}... (Implement backend connection here)`);
     // Example: fetch(\`${ENDPOINTS.POSTS}/${postId}/vote\`, { method: 'POST', body: JSON.stringify({type: voteType}) ... })
 }
+
+const toggleBtn = document.getElementById('dark-mode-toggle');
+const body = document.body;
+
+// 1. Check if the user already chose dark mode previously
+if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+}
+
+// 2. Listen for the toggle click
+toggleBtn.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    
+    // 3. Save their preference
+    if (body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+    } else {
+        localStorage.setItem('theme', 'light');
+    }
+});
