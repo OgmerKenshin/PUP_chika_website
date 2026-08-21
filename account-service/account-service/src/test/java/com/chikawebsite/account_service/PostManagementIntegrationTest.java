@@ -3,6 +3,7 @@ package com.chikawebsite.account_service;
 import com.chikawebsite.account_service.dto.LoginRequest;
 import com.chikawebsite.account_service.dto.PostCreateRequest;
 import com.chikawebsite.account_service.dto.SignupRequest;
+import com.chikawebsite.account_service.model.User;
 import com.chikawebsite.account_service.repository.PostRepository;
 import com.chikawebsite.account_service.repository.UserProfileRepository;
 import com.chikawebsite.account_service.repository.UserRepository;
@@ -112,12 +113,61 @@ class PostManagementIntegrationTest {
     }
 
     @Test
+    void deletePost_byAdmin_removesPost() throws Exception {
+        String author = registerAndLogin("Ada", "ada@example.com", "secret123");
+        String adminToken = registerAndLogin("Admin User", "admin@example.com", "secret123");
+        
+        // Grant admin role
+        User adminUser = userRepository.findByEmail("admin@example.com").orElseThrow();
+        adminUser.setRole("ROLE_ADMIN");
+        userRepository.save(adminUser);
+
+        long postId = createPost(author, "Flagged", "Needs removal");
+
+        mockMvc.perform(delete("/api/posts/" + postId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/posts/" + postId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void deletePost_withoutToken_returns401() throws Exception {
         String author = registerAndLogin("Ada", "ada@example.com", "secret123");
         long postId = createPost(author, "Mine", "Hands off");
 
         mockMvc.perform(delete("/api/posts/" + postId))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ---------- UPDATE POST ----------
+
+    @Test
+    void updatePost_byAuthor_succeeds() throws Exception {
+        String author = registerAndLogin("Ada", "ada@example.com", "secret123");
+        long postId = createPost(author, "Original Title", "Original Content");
+
+        mockMvc.perform(put("/api/posts/" + postId)
+                        .header("Authorization", "Bearer " + author)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new PostCreateRequest("Updated Title", "Updated Content"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"))
+                .andExpect(jsonPath("$.content").value("Updated Content"));
+    }
+
+    @Test
+    void updatePost_byNonAuthor_returns403() throws Exception {
+        String author = registerAndLogin("Ada", "ada@example.com", "secret123");
+        String other = registerAndLogin("Grace", "grace@example.com", "secret123");
+        long postId = createPost(author, "Original Title", "Original Content");
+
+        mockMvc.perform(put("/api/posts/" + postId)
+                        .header("Authorization", "Bearer " + other)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new PostCreateRequest("Hacked Title", "Hacked Content"))))
+                .andExpect(status().isForbidden());
     }
 
     // ---------- SESSION LIFECYCLE ----------

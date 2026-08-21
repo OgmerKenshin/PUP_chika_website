@@ -42,6 +42,7 @@ public class AuthService {
                 .name(request.name().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.password()))
+                .role("ROLE_USER")
                 .build();
 
         User saved = userRepository.save(user);
@@ -54,7 +55,8 @@ public class AuthService {
                 token,
                 saved.getId(),
                 saved.getName(),
-                saved.getEmail()
+                saved.getEmail(),
+                saved.getRole() != null ? saved.getRole() : "ROLE_USER"
         );
     }
 
@@ -76,7 +78,8 @@ public class AuthService {
                 token,
                 user.getId(),
                 user.getName(),
-                user.getEmail()
+                user.getEmail(),
+                user.getRole() != null ? user.getRole() : "ROLE_USER"
         );
     }
 }

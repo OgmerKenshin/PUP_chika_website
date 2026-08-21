@@ -24,4 +24,8 @@ public class User {
 
     @Column(nullable = false)
     private String password; // Stored as a BCrypt hash, never plaintext
+
+    @Column(nullable = false)
+    @Builder.Default
+    private String role = "ROLE_USER";
 }

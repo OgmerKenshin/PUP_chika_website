@@ -9,6 +9,10 @@ public record AuthResponse(
         String token,
         Long userId,
         String name,
-        String email
+        String email,
+        String role
 ) {
+    public AuthResponse(String message, String token, Long userId, String name, String email) {
+        this(message, token, userId, name, email, "ROLE_USER");
+    }
 }

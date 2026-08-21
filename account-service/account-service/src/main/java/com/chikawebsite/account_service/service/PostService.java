@@ -49,13 +49,29 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post " + postId + " not found"));
     }
 
-    /** Only the author may delete a post; its votes are removed with it. */
+    /** Only the author may edit a post. */
+    @Transactional
+    public PostResponse update(User user, Long postId, PostCreateRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post " + postId + " not found"));
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            throw new ForbiddenOperationException("Only the author can edit this post");
+        }
+        post.setTitle(request.title().trim());
+        post.setContent(request.content().trim());
+        return toResponse(postRepository.save(post));
+    }
+
+    /** The author or a ROLE_ADMIN user may delete a post; its votes are removed with it. */
     @Transactional
     public void delete(User user, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post " + postId + " not found"));
-        if (!post.getAuthor().getId().equals(user.getId())) {
-            throw new ForbiddenOperationException("Only the author can delete this post");
+        boolean isAuthor = post.getAuthor().getId().equals(user.getId());
+        boolean isAdmin = user.getRole() != null &&
+                ("ROLE_ADMIN".equalsIgnoreCase(user.getRole()) || "ADMIN".equalsIgnoreCase(user.getRole()));
+        if (!isAuthor && !isAdmin) {
+            throw new ForbiddenOperationException("Only the author or an admin can delete this post");
         }
         voteRepository.deleteByPostId(postId);
         postRepository.delete(post);
