@@ -24,20 +24,6 @@ body {
     min-height: 100vh;
 }
 
-/* --- 3. Navigation Bar --- */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--primary-red);
-    color: white;
-    padding: 0.85rem 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
 .nav-brand {
     display: flex;
     align-items: center;
@@ -775,38 +761,188 @@ body.dark-mode .toast-close-btn:hover {
     color: #fff;
 }
 
-/* --- 12. Night Sky & Shooting Stars Background --- */
-.night-sky {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  z-index: -1;
-  background-image: 
-    radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 150px 70px, #ffffff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 50px 160px, #dddddd, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 300px 180px, #ffffff, rgba(0,0,0,0));
-  background-repeat: repeat;
-  background-size: 350px 350px;
+/* Forces all actual website content to sit ABOVE the stars */
+.top-bar, .auth-card, .dashboard-container {
+  position: relative;
+  z-index: 10; 
 }
 
-body.dark-mode .night-sky {
+/* --- 1.. The Deep Space Background --- */
+.starry-bg {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0; /* Changed from -1 to ensure it shows up */
+  pointer-events: none;
+  overflow: hidden;
+  /* Adds a subtle purple/blue nebula gradient behind the stars */
+  background: radial-gradient(circle at 50% 40%, #150a2e 0%, #05050f 70%);
+}
+
+body.dark-mode .starry-bg {
   display: block;
 }
 
-.shooting-star {
+/* --- 2. Enhanced Stars & Sparkles --- */
+.star-dot {
   position: absolute;
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-  transform: rotate(-45deg);
-  opacity: 0;
-  animation: shoot 5s infinite linear;
+  border-radius: 50%;
+  animation: intense-twinkle ease-in-out infinite alternate;
 }
 
-@keyframes shoot {
-  0% { transform: translate(0, 0) rotate(-45deg); opacity: 1; }
-  15% { transform: translate(-300px, 300px) rotate(-45deg); opacity: 0; }
-  100% { opacity: 0; }
+.star-sparkle {
+  position: absolute;
+  background: currentColor;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  filter: drop-shadow(0 0 8px currentColor);
+  animation: sparkle-glow ease-in-out infinite alternate;
+}
+
+@keyframes intense-twinkle {
+  0% { opacity: 0.1; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0.2; transform: scale(0.8); }
+}
+
+@keyframes sparkle-glow {
+  0% { opacity: 0.2; transform: scale(0.5) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.4) rotate(20deg); }
+}
+
+/* --- 3. Hyper-Realistic Shooting Stars --- */
+.shooting-star-trail {
+  position: absolute;
+  height: 2px;
+  border-radius: 50%;
+  /* Head is bright white, tail fades into the assigned neon color */
+  background: linear-gradient(-45deg, #ffffff, var(--trail-color), transparent 60%);
+  filter: drop-shadow(0 0 10px var(--trail-color));
+  animation: shoot-across linear infinite;
+  opacity: 0;
+}
+
+@keyframes shoot-across {
+  0% {
+    width: 0px;
+    transform: translateX(0) translateY(0) rotate(-35deg);
+    opacity: 0;
+  }
+  10% {
+    width: 180px;
+    opacity: 1;
+  }
+  80% {
+    width: 250px;
+    opacity: 1;
+  }
+  100% {
+    width: 0px;
+    transform: translateX(-1000px) translateY(1000px) rotate(-35deg);
+    opacity: 0;
+  }
+}
+
+/* --- 4. Max-Design Neon Header --- */
+/* Light Mode Base */
+.top-bar {
+  background: #8a0000; /* Standard PUP Maroon */
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: all 0.5s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.neon-sign-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid transparent;
+  padding: 8px 25px;
+  transition: all 0.5s ease;
+}
+
+.neon-text-main {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 3px;
+  text-shadow: none;
+}
+
+.neon-text-sub {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-style: italic;
+  color: #ffffff;
+  letter-spacing: 4px;
+  text-shadow: none;
+}
+
+/* Dark Mode Overrides */
+body.dark-mode .top-bar {
+  background: rgba(14, 0, 36, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid #ff0055;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.5), inset 0 -2px 15px rgba(255, 0, 85, 0.4);
+}
+
+body.dark-mode .neon-sign-container {
+  border-color: #ff007f;
+  border-radius: 12px;
+  background: rgba(255, 0, 127, 0.05);
+  box-shadow: 0 0 10px #ff007f, inset 0 0 10px #ff007f;
+}
+
+body.dark-mode .neon-text-main {
+  text-shadow: 0 0 5px #fff, 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 40px #ff007f, 0 0 80px #ff007f;
+}
+
+body.dark-mode .neon-text-sub {
+  text-shadow: 0 0 5px #fff, 0 0 10px #00f0ff, 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+}
+
+/* --- 5. The Toggle Switch --- */
+.theme-switch {
+  width: 80px; height: 38px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  border: 1px solid #ff007f;
+  position: relative; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px;
+  box-shadow: 0 0 10px rgba(255,0,127,0.3);
+  outline: none;
+}
+.switch-handle {
+  width: 30px; height: 30px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute; top: 3px; left: 45px;
+  display: flex; align-items: center; justify-content: center;
+  color: #333;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+}
+.moon-icon { color: #ffffff; }
+body.dark-mode .switch-handle {
+  transform: translateX(-40px);
+}
+
+/* --- Header Controls Alignment --- */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Adds space between the buttons and the toggle switch */
+}
+
+/* Adjust the brand container to match the height nicely */
+.neon-sign-container {
+    padding: 6px 20px; 
+    cursor: pointer;
 }

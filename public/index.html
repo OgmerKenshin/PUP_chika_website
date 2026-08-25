@@ -7,29 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- Night Sky Background (Dark Mode) -->
-    <div class="night-sky">
-        <div class="shooting-star" style="top: 10%; left: 80%; animation-delay: 0s;"></div>
-        <div class="shooting-star" style="top: 30%; left: 60%; animation-delay: 2.5s;"></div>
-    </div>
-
-    <!-- Top Navigation Bar -->
-    <nav class="navbar">
-        <a href="#/feed" class="nav-brand" id="nav-brand-link" title="PUP Chika">
-            <span class="brand-icon">🎓</span>
-            <h2>PUP Chika</h2>
+    <!-- 1. The Dynamic Space Background -->
+    <div id="starry-background" class="starry-bg"></div>
+    <!-- 2. Unified Neon Header & Navigation -->
+    <header class="top-bar">
+        <a href="#/feed" class="neon-sign-container" id="nav-brand-link" style="text-decoration: none;">
+            <h1 class="neon-text-main">PUP CHIKA</h1>
+            <span class="neon-text-sub">UNIVERSITY HUB</span>
         </a>
-        <div class="nav-links" id="nav-links">
-            <a href="#/feed" id="nav-feed-link" class="nav-btn" style="display: none;">Feed</a>
-            <a href="#/create-post" id="nav-create-link" class="nav-btn create-nav-btn" style="display: none;">+ Post</a>
-            <a href="#/dashboard" id="nav-dashboard-link" class="nav-btn" style="display: none;">Dashboard</a>
-            <button id="nav-logout-btn" class="nav-btn logout-btn" onclick="handleLogout()" style="display: none;">Logout</button>
-            <a href="#/login" id="nav-login-link" class="nav-btn">Sign In</a>
-            <a href="#/signup" id="nav-signup-link" class="nav-btn">Sign Up</a>
-            <button id="dark-mode-toggle" class="theme-toggle-btn" aria-label="Toggle Dark Mode" title="Toggle Dark/Light Mode">🌙</button>
+
+        <div class="header-controls">
+            <!-- Nav Links moved inside the neon header -->
+            <div class="nav-links" id="nav-links">
+                <a href="#/feed" id="nav-feed-link" class="nav-btn" style="display: none;">Feed</a>
+                <a href="#/create-post" id="nav-create-link" class="nav-btn create-nav-btn" style="display: none;">+ Post</a>
+                <a href="#/dashboard" id="nav-dashboard-link" class="nav-btn" style="display: none;">Dashboard</a>
+                <button id="nav-logout-btn" class="nav-btn logout-btn" onclick="handleLogout()" style="display: none;">Logout</button>
+                <a href="#/login" id="nav-login-link" class="nav-btn">Sign In</a>
+                <a href="#/signup" id="nav-signup-link" class="nav-btn">Sign Up</a>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <button id="theme-toggle" class="theme-switch" aria-label="Toggle theme">
+                <div class="switch-handle">
+                    <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0 1 .45 1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+                </div>
+                <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
         </div>
-    </nav>
+    </header>
 
     <!-- Main Content Container -->
     <main class="main-content">

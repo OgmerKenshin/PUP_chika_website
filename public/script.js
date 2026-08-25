@@ -17,7 +17,6 @@ let currentFeedPosts = [];
 
 // Application startup
 window.addEventListener('DOMContentLoaded', () => {
-    initTheme();
     initGlobalDropdownListener();
     window.addEventListener('hashchange', handleRouteChange);
     handleRouteChange();
@@ -214,7 +213,8 @@ function updateNavUI(currentRoute) {
     }
 
     // Update active highlight classes
-    document.querySelectorAll('.navbar .nav-btn').forEach(btn => btn.classList.remove('active'));
+    // Update active highlight classes
+    document.querySelectorAll('.header-controls .nav-btn').forEach(btn => btn.classList.remove('active'));
     if (currentRoute === '#/feed' && feedLink) feedLink.classList.add('active');
     if (currentRoute === '#/create-post' && createLink) createLink.classList.add('active');
     if (currentRoute === '#/dashboard' && dashLink) dashLink.classList.add('active');
@@ -797,29 +797,74 @@ async function handleVote(postId, voteType) {
         console.error('Vote error:', err);
     }
 }
-
 // ==========================================
-// 8. DARK MODE THEME MANAGEMENT
+// 8. DARK MODE & BACKGROUND MANAGEMENT
 // ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('theme-toggle'); // Correct ID
+  const bgContainer = document.getElementById('starry-background');
+  const body = document.body;
+  
+  // High-contrast neon palette
+  const starColors = ['#ffffff', '#00f0ff', '#ff007f', '#a855f7', '#ffea00'];
 
-function initTheme() {
-    const toggleBtn = document.getElementById('dark-mode-toggle');
-    const body = document.body;
+  function createStarrySky() {
+    if (!bgContainer) return;
+    bgContainer.innerHTML = ''; 
 
-    // Check saved preference
-    if (localStorage.getItem('theme') === 'dark') {
-        body.classList.add('dark-mode');
-        if (toggleBtn) toggleBtn.textContent = '☀️';
-    } else {
-        if (toggleBtn) toggleBtn.textContent = '🌙';
+    // Generate Twinkling Stars
+    for (let i = 0; i < 180; i++) {
+      const star = document.createElement('div');
+      const isSparkle = Math.random() > 0.85; 
+      star.classList.add(isSparkle ? 'star-sparkle' : 'star-dot');
+
+      const color = starColors[Math.floor(Math.random() * starColors.length)];
+      const size = isSparkle ? (Math.random() * 10 + 5) : (Math.random() * 3 + 1);
+
+      star.style.left = `${Math.random() * 100}vw`;
+      star.style.top = `${Math.random() * 100}vh`;
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+
+      if (!isSparkle) {
+        star.style.backgroundColor = color;
+        star.style.boxShadow = `0 0 ${size * 4}px ${color}`;
+      } else {
+        star.style.color = color; 
+      }
+
+      star.style.animationDelay = `${Math.random() * 5}s`;
+      star.style.animationDuration = `${1.5 + Math.random() * 3}s`;
+      bgContainer.appendChild(star);
     }
 
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDark = body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            toggleBtn.textContent = isDark ? '☀️' : '🌙';
-        });
+    // Generate Shooting Stars
+    for (let i = 0; i < 15; i++) {
+      const shootingStar = document.createElement('div');
+      shootingStar.classList.add('shooting-star-trail');
+      const color = starColors[Math.floor(Math.random() * starColors.length)];
+      
+      shootingStar.style.top = `${Math.random() * -20}%`;
+      shootingStar.style.left = `${20 + Math.random() * 100}%`;
+      shootingStar.style.setProperty('--trail-color', color);
+      shootingStar.style.animationDelay = `${Math.random() * 10}s`;
+      shootingStar.style.animationDuration = `${2 + Math.random() * 2}s`;
+
+      bgContainer.appendChild(shootingStar);
     }
-}
+  }
+
+  createStarrySky();
+
+  // Handle Dark Mode State & Toggle
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    });
+  }
+});
